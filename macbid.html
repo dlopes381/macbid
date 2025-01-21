@@ -90,8 +90,9 @@
 
         <label>Select Condition:</label>
         <div class="radio-group">
-            <label><input type="radio" name="condition" value="likeNew" checked> Like-new (66% off)</label>
-            <label><input type="radio" name="condition" value="openBox"> Open box (75% off)</label>
+            <label><input type="radio" name="condition" value="openBox" checked> Open box (75% off)</label>
+            <label><input type="radio" name="condition" value="openBox-70"> Open box (70% off)</label>
+            <label><input type="radio" name="condition" value="likeNew"> Like-new (66% off)</label>
         </div>
 
         <label for="bid">Current Bid Amount ($):</label>
@@ -102,8 +103,8 @@
 
         <div class="result" id="result">
             <p><span>Retail Value:</span> $<span id="retailValueDisplay">0.00</span></p>
-            <p><span>Suggested Bid Based on Condition:</span> $<span id="suggestedBid">0.00</span></p>
-            <p><span>Amount Saved (based on Total Cost and Bid):</span> <span id="amountSaved" class="discounted-price">0.00</span></p>
+            <p><span>Suggested Price Based on Condition:</span> $<span id="suggestedBid">0.00</span></p>
+            <p><span>Amount Saved (Total Cost - Current Bid):</span> $<span id="amountSaved" class="discounted-price">0.00</span></p>
             <p><span>Total Cost Based on Bid Amount:</span> $<span id="totalCost">0.00</span></p>
             <p><span>Max Bid Based on What You Want to Pay:</span> $<span id="maxBidAmount">0.00</span></p>
             <p><span>Condition Status:</span> <span id="dealStatus" class="deal-status"></span></p>
@@ -118,10 +119,10 @@
             const maxTotal = parseInt(document.getElementById("maxTotal").value);
             
             // If bid amount is 0 or not a valid number, clear the results
-            if (isNaN(bidAmount) || bidAmount <= 0) {
-                clearResults();
-                return;
-            }
+            // if (isNaN(bidAmount) || bidAmount < 0) {
+            //     clearResults();
+            //     return;
+            // }
 
             // Get the selected condition (Like-new or Open box)
             const condition = document.querySelector('input[name="condition"]:checked').value;
@@ -136,9 +137,9 @@
             const taxRate = 0.086;
             
             // Ensure bidAmount and retailValue are numbers
-            if (isNaN(bidAmount) || isNaN(retailValue)) {
-                return; // Do nothing if inputs are invalid
-            }
+            // if (isNaN(bidAmount) || isNaN(retailValue)) {
+            //     return; // Do nothing if inputs are invalid
+            // }
 
             // Calculate the total cost based on bid amount
             let totalCost = 0;
@@ -171,9 +172,12 @@
             if (condition === "likeNew") {
                 discount = 0.66; // 66% off for "Like-new"
                 suggestedBid = retailValue * (1 - discount); // Suggested bid for "Like-new"
-            } else if (condition === "openBox") {
-                discount = 0.75; // 75% off for "Open box"
+            } else if (condition === "openBox-70") {
+                discount = 0.70; // 70% off for "Open box"
                 suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"
+            } else {
+                discount = 0.75; // 75% off for "Open box"
+                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"             
             }
 
             // Calculate the discounted price based on retail value and condition
@@ -186,16 +190,20 @@
             document.getElementById("retailValueDisplay").textContent = retailValue.toFixed(2);
             document.getElementById("suggestedBid").textContent = suggestedBid.toFixed(2);
             document.getElementById("amountSaved").textContent = amountSaved.toFixed(2);
-            document.getElementById("discountedPrice").textContent = discountedPrice.toFixed(2);
+            //document.getElementById("discountedPrice").textContent = discountedPrice.toFixed(2);
 
             // Check if the bid is a good deal
             if (bidAmount <= discountedPrice) {
                 goodDeal = true;
                 dealStatus = "Good deal!"; // Good deal message
                 document.getElementById("dealStatus").classList.add("good-deal");
-            } else {
+            } else if(bidAmount){
                 goodDeal = false;
                 dealStatus = "Not a good deal."; // Not a good deal message
+                document.getElementById("dealStatus").classList.remove("good-deal");
+            } else {
+                goodDeal = false;
+                dealStatus = "Current Bid Amount Not Set"; // Not a good deal message
                 document.getElementById("dealStatus").classList.remove("good-deal");
             }
 
@@ -215,12 +223,37 @@
         }
 
         // Attach event listeners to input fields to automatically update calculations
-        document.getElementById("retailValue").addEventListener("input", calculate);
+        document.getElementById("retailValue").addEventListener("input", preCalculate);
         document.getElementById("bid").addEventListener("input", calculate);
         document.getElementById("maxTotal").addEventListener("input", calculate);
         document.querySelectorAll('input[name="condition"]').forEach((radio) => {
-            radio.addEventListener("change", calculate);
+            radio.addEventListener("change", preCalculate);
         });
+
+        function preCalculate(){
+            const condition = document.querySelector('input[name="condition"]:checked').value;
+            let retailValue = parseInt(document.getElementById("retailValue").value);
+
+            // Ensure bidAmount and retailValue are numbers
+            if (isNaN(retailValue)) {
+                return; // Do nothing if inputs are invalid
+            }
+
+            let discountedPrice = 0;
+            if (condition === "likeNew") {
+                discount = 0.66; // 66% off for "Like-new"
+                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Like-new"
+            } else if (condition === "openBox-70") {
+                discount = 0.70; // 70% off for "Open box"
+                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"
+            } else {
+                discount = 0.75; // 75% off for "Open box"
+                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"             
+            }
+            document.getElementById("suggestedBid").textContent = suggestedBid.toFixed(2);
+            document.getElementById("maxTotal").value = suggestedBid.toFixed(2);
+            calculate();
+        }
     </script>
 </body>
 </html>
