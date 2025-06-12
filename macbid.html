@@ -120,7 +120,7 @@
           
           <button onclick="calculateFutureTime()">Calculate</button>
         
-          <h3 id="result"></h3>
+          <h3 id="timeResult"></h3>
         </div>
     </div>
 
@@ -285,7 +285,7 @@
             second: '2-digit',
           };
     
-          document.getElementById('result').textContent = 
+          document.getElementById('timeResult').textContent = 
             `Future time: ${future.toLocaleString(undefined, options)}`;
         }
     </script>
