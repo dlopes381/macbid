@@ -109,6 +109,19 @@
             <p><span>Max Bid Based on What You Want to Pay:</span> $<span id="maxBidAmount">0.00</span></p>
             <p><span>Condition Status:</span> <span id="dealStatus" class="deal-status"></span></p>
         </div>
+        <div id="timeCalculator">
+          <h2>Future Time Calculator</h2>
+
+          <label for="hours">Hours:</label>
+          <input type="number" id="hours" min="0" placeholder="e.g. 11">
+          
+          <label for="minutes">Minutes:</label>
+          <input type="number" id="minutes" min="0" max="59" placeholder="e.g. 33">
+          
+          <button onclick="calculateFutureTime()">Calculate</button>
+        
+          <h3 id="result"></h3>
+        </div>
     </div>
 
     <script>
@@ -253,6 +266,27 @@
             document.getElementById("suggestedBid").textContent = suggestedBid.toFixed(2);
             document.getElementById("maxTotal").value = suggestedBid.toFixed(2);
             calculate();
+        }
+
+        function calculateFutureTime() {
+          const hours = parseInt(document.getElementById('hours').value) || 0;
+          const minutes = parseInt(document.getElementById('minutes').value) || 0;
+    
+          const now = new Date();  // Get current local time
+          const future = new Date(now.getTime() + (hours * 60 + minutes) * 60000);  // Add time in ms
+    
+          const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          };
+    
+          document.getElementById('result').textContent = 
+            `Future time: ${future.toLocaleString(undefined, options)}`;
         }
     </script>
 </body>
