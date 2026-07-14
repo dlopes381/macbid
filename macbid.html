@@ -5,276 +5,527 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mac-Bid Total Cost Calculator</title>
     <style>
+        :root {
+            --bg: #f2f4f7;
+            --card-bg: #ffffff;
+            --text: #1a1d23;
+            --text-muted: #6b7280;
+            --border: #e2e5eb;
+            --input-bg: #ffffff;
+            --accent: #4f46e5;
+            --accent-hover: #4338ca;
+            --accent-soft: #eef2ff;
+            --great: #059669;
+            --great-soft: #ecfdf5;
+            --good: #16a34a;
+            --good-soft: #ecfdf3;
+            --fair: #d97706;
+            --fair-soft: #fffbeb;
+            --bad: #dc2626;
+            --bad-soft: #fef2f2;
+            --shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+            --radius: 14px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f1115;
+                --card-bg: #181b21;
+                --text: #f2f3f5;
+                --text-muted: #9aa1ac;
+                --border: #2a2e37;
+                --input-bg: #1f232b;
+                --accent: #818cf8;
+                --accent-hover: #a5b4fc;
+                --accent-soft: rgba(129, 140, 248, 0.14);
+                --great: #34d399;
+                --great-soft: rgba(52, 211, 153, 0.12);
+                --good: #4ade80;
+                --good-soft: rgba(74, 222, 128, 0.12);
+                --fair: #fbbf24;
+                --fair-soft: rgba(251, 191, 36, 0.12);
+                --bad: #f87171;
+                --bad-soft: rgba(248, 113, 113, 0.12);
+                --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.35);
+            }
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
+            padding: 24px 16px 64px;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
+
         .container {
-            max-width: 600px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
+            max-width: 520px;
+            margin: 0 auto;
         }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
         h1 {
+            font-size: 22px;
+            font-weight: 700;
             text-align: center;
+            margin: 8px 0 4px;
+            letter-spacing: -0.01em;
         }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin: 0 0 24px;
+        }
+
+        h2 {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         label {
             display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: var(--text-muted);
         }
-        input, select, .radio-group {
+
+        .field {
+            margin-bottom: 18px;
+        }
+
+        input[type="number"] {
             width: 100%;
-            padding: 8px;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+            padding: 11px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
             font-size: 16px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+            -moz-appearance: textfield;
         }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
         .radio-group {
-            display: flex;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 8px;
+        }
+
+        .radio-option {
+            position: relative;
+        }
+
+        .radio-option input {
+            position: absolute;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .radio-option span {
+            display: block;
+            text-align: center;
+            padding: 10px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .radio-option input:checked + span {
+            border-color: var(--accent);
+            background-color: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .radio-option input:focus-visible + span {
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .result {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px 24px;
             margin-bottom: 20px;
         }
-        .radio-group label {
-            display: inline-block;
-            font-weight: normal;
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            gap: 12px;
         }
-        .result {
-            background-color: #e7f7e7;
-            padding: 15px;
-            margin-top: 20px;
+
+        .result-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .result-label {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .result-value {
+            font-size: 16px;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        .result-value.highlight {
+            color: var(--accent);
+            font-size: 19px;
+        }
+
+        .warning {
+            font-size: 13px;
+            color: var(--bad);
+            background-color: var(--bad-soft);
+            padding: 10px 12px;
             border-radius: 8px;
+            margin-top: 12px;
         }
-        .result span {
-            font-weight: bold;
+
+        .deal-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            background-color: var(--border);
+            color: var(--text-muted);
+            transition: all 0.15s ease;
         }
+
+        .deal-badge.grade-great {
+            background-color: var(--great-soft);
+            color: var(--great);
+        }
+
+        .deal-badge.grade-good {
+            background-color: var(--good-soft);
+            color: var(--good);
+        }
+
+        .deal-badge.grade-fair {
+            background-color: var(--fair-soft);
+            color: var(--fair);
+        }
+
+        .deal-badge.grade-bad {
+            background-color: var(--bad-soft);
+            color: var(--bad);
+        }
+
         button {
-            padding: 10px 20px;
-            background-color: #4CAF50;
+            padding: 12px 20px;
+            background-color: var(--accent);
             color: white;
             border: none;
-            border-radius: 4px;
+            border-radius: 10px;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 600;
             width: 100%;
+            transition: background-color 0.15s ease, transform 0.05s ease;
         }
+
         button:hover {
-            background-color: #45a049;
+            background-color: var(--accent-hover);
         }
-        .deal-status {
-            font-weight: bold;
-            color: #e74c3c;
+
+        button:active {
+            transform: scale(0.99);
         }
-        .good-deal {
-            color: green;
+
+        #timeResult {
+            margin-top: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+            min-height: 20px;
         }
-        .discounted-price {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2ecc71;
+
+        @media (max-width: 420px) {
+            .card, .result {
+                padding: 18px;
+                border-radius: 12px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Mac-Bid Total Cost Calculator</h1>
-        
-        <label for="retailValue">Enter Retail Value ($):</label>
-        <input type="number" id="retailValue" placeholder="Enter retail value" step="1" min="1" />
+        <p class="subtitle">Estimate fees, tax, and your ideal bid before you commit</p>
 
-        <label>Select Condition:</label>
-        <div class="radio-group">
-            <label><input type="radio" name="condition" value="openBox" checked> Open box (75% off)</label>
-            <label><input type="radio" name="condition" value="openBox-70"> Open box (70% off)</label>
-            <label><input type="radio" name="condition" value="likeNew"> Like-new (66% off)</label>
+        <div class="card">
+            <form id="calcForm" onsubmit="return false;">
+                <div class="field">
+                    <label for="retailValue">Retail Value ($)</label>
+                    <input type="number" id="retailValue" placeholder="e.g. 250" step="0.01" min="1" inputmode="decimal" />
+                </div>
+
+                <div class="field">
+                    <label>Condition</label>
+                    <div class="radio-group">
+                        <label class="radio-option">
+                            <input type="radio" name="condition" value="openBox" checked>
+                            <span>Open box<br>75% off</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="condition" value="openBox-70">
+                            <span>Open box<br>70% off</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="condition" value="likeNew">
+                            <span>Like-new<br>66% off</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label for="bid">Current Bid Amount ($)</label>
+                    <input type="number" id="bid" placeholder="Enter your bid" step="0.01" min="0" inputmode="decimal" />
+                </div>
+
+                <div class="field" style="margin-bottom: 0;">
+                    <label for="maxTotal">I Only Want to Pay ($)</label>
+                    <input type="number" id="maxTotal" placeholder="Enter your max total cost" step="0.01" min="1" inputmode="decimal" />
+                </div>
+            </form>
         </div>
-
-        <label for="bid">Current Bid Amount ($):</label>
-        <input type="number" id="bid" placeholder="Enter your bid" step="1" min="0" />
-
-        <label for="maxTotal">I Only Want to Pay ($):</label>
-        <input type="number" id="maxTotal" placeholder="Enter your max total cost" step="1" min="1" />
 
         <div class="result" id="result">
-            <p><span>Retail Value:</span> $<span id="retailValueDisplay">0.00</span></p>
-            <p><span>Suggested Price Based on Condition:</span> $<span id="suggestedBid">0.00</span></p>
-            <p><span>Amount Saved (Total Cost - Current Bid):</span> $<span id="amountSaved" class="discounted-price">0.00</span></p>
-            <p><span>Total Cost Based on Bid Amount:</span> $<span id="totalCost">0.00</span></p>
-            <p><span>Max Bid Based on What You Want to Pay:</span> $<span id="maxBidAmount">0.00</span></p>
-            <p><span>Condition Status:</span> <span id="dealStatus" class="deal-status"></span></p>
+            <div class="result-row">
+                <span class="result-label">Retail Value</span>
+                <span class="result-value">$<span id="retailValueDisplay">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Suggested Price for Condition</span>
+                <span class="result-value">$<span id="suggestedBid">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Amount Saved (Retail − Total Cost)</span>
+                <span class="result-value highlight">$<span id="amountSaved">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Total Cost for Your Bid</span>
+                <span class="result-value">$<span id="totalCost">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Max Bid to Hit Your Target</span>
+                <span class="result-value">$<span id="maxBidAmount">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Deal Status</span>
+                <span id="dealStatus" class="deal-badge" role="status" aria-live="polite"></span>
+            </div>
+            <p id="maxBidWarning" class="warning" hidden>Your target total is too low to cover fees and tax.</p>
         </div>
-        <div id="timeCalculator">
-          <h2>Future Time Calculator</h2>
 
-          <label for="hours">Hours:</label>
-          <input type="number" id="hours" min="0" placeholder="e.g. 11">
-          
-          <label for="minutes">Minutes:</label>
-          <input type="number" id="minutes" min="0" max="59" placeholder="e.g. 33">
-          
-          <button onclick="calculateFutureTime()">Calculate</button>
-        
-          <h3 id="timeResult"></h3>
+        <div class="card" id="timeCalculator">
+          <h2>⏱ Future Time Calculator</h2>
+
+          <div class="field">
+              <label for="hours">Hours</label>
+              <input type="number" id="hours" min="0" placeholder="e.g. 11" inputmode="numeric">
+          </div>
+
+          <div class="field" style="margin-bottom: 0;">
+              <label for="minutes">Minutes</label>
+              <input type="number" id="minutes" min="0" max="59" placeholder="e.g. 33" inputmode="numeric">
+          </div>
+
+          <button type="button" id="calcTimeBtn" style="margin-top: 18px;">Calculate</button>
+
+          <p id="timeResult" role="status" aria-live="polite"></p>
         </div>
     </div>
 
     <script>
+        const handlingFee = 3.00;
+        const premiumRate = 0.15;
+        const taxRate = 0.091;
+
+        // Tracks whether the user has manually edited "I Only Want to Pay"
+        // so we stop overwriting it once they've taken control of it.
+        let maxTotalDirty = false;
+
+        function getDiscount(condition) {
+            if (condition === "likeNew") return 0.66;
+            if (condition === "openBox-70") return 0.70;
+            return 0.75; // openBox
+        }
+
         function calculate() {
-            // Get input values
-            let retailValue = parseInt(document.getElementById("retailValue").value);
-            let bidAmount = parseInt(document.getElementById("bid").value);
-            const maxTotal = parseInt(document.getElementById("maxTotal").value);
-            
-            // If bid amount is 0 or not a valid number, clear the results
-            // if (isNaN(bidAmount) || bidAmount < 0) {
-            //     clearResults();
-            //     return;
-            // }
+            const retailValue = parseFloat(document.getElementById("retailValue").value);
+            const bidAmount = parseFloat(document.getElementById("bid").value);
+            const maxTotal = parseFloat(document.getElementById("maxTotal").value);
 
-            // Get the selected condition (Like-new or Open box)
+            const hasRetailValue = !isNaN(retailValue) && retailValue > 0;
+            const hasBid = !isNaN(bidAmount) && bidAmount > 0;
+            const hasMaxTotal = !isNaN(maxTotal) && maxTotal > 0;
+
             const condition = document.querySelector('input[name="condition"]:checked').value;
-            
-            // Default status for deal
-            let dealStatus = "Invalid inputs, please try again.";
-            let goodDeal = false;
+            const discount = getDiscount(condition);
+            const discountedPrice = hasRetailValue ? retailValue * (1 - discount) : 0;
 
-            // Calculate the total cost for the input bid amount
-            const handlingFee = 3.00;
-            const premiumRate = 0.15;
-            const taxRate = 0.091;
-            
-            // Ensure bidAmount and retailValue are numbers
-            // if (isNaN(bidAmount) || isNaN(retailValue)) {
-            //     return; // Do nothing if inputs are invalid
-            // }
-
-            // Calculate the total cost based on bid amount
+            // Total cost only needs a bid amount - independent of retail value.
             let totalCost = 0;
-            if (bidAmount > 0) {
+            if (hasBid) {
                 const premium = bidAmount * premiumRate;
                 const subtotal = bidAmount + handlingFee + premium;
                 totalCost = subtotal * (1 + taxRate);
             }
-
-            // Display the calculated total cost
             document.getElementById("totalCost").textContent = totalCost.toFixed(2);
 
-            // Calculate the maximum bid to stay under the specified total cost
+            // Max bid only needs a target total - independent of retail value.
             let maxBid = 0;
-            if (maxTotal > 0) {
+            const warningEl = document.getElementById("maxBidWarning");
+            if (hasMaxTotal) {
                 maxBid = (maxTotal / (1 + taxRate) - handlingFee) / (1 + premiumRate);
+                maxBid = Math.floor(maxBid);
+                if (maxBid < 0) {
+                    maxBid = 0;
+                    warningEl.hidden = false;
+                } else {
+                    warningEl.hidden = true;
+                }
+            } else {
+                warningEl.hidden = true;
             }
-
-            // Round the max bid to the nearest whole number (whole dollars)
-            maxBid = Math.floor(maxBid); // Use Math.floor() to round down to nearest dollar
-
-            // Display the calculated max bid
             document.getElementById("maxBidAmount").textContent = maxBid.toFixed(0);
 
-            // Determine the discount based on condition and calculate the discounted price
-            let discount = 0;
-            let discountedPrice = 0;
-            let suggestedBid = 0;
-
-            if (condition === "likeNew") {
-                discount = 0.66; // 66% off for "Like-new"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Like-new"
-            } else if (condition === "openBox-70") {
-                discount = 0.70; // 70% off for "Open box"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"
+            // Retail-value-dependent fields.
+            if (hasRetailValue) {
+                document.getElementById("retailValueDisplay").textContent = retailValue.toFixed(2);
+                document.getElementById("suggestedBid").textContent = discountedPrice.toFixed(2);
+                document.getElementById("amountSaved").textContent = (retailValue - totalCost).toFixed(2);
             } else {
-                discount = 0.75; // 75% off for "Open box"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"             
+                document.getElementById("retailValueDisplay").textContent = "0.00";
+                document.getElementById("suggestedBid").textContent = "0.00";
+                document.getElementById("amountSaved").textContent = "0.00";
             }
 
-            // Calculate the discounted price based on retail value and condition
-            discountedPrice = retailValue * (1 - discount);
-
-            // Calculate the savings (retail value - total cost)
-            let amountSaved = retailValue - totalCost;
-
-            // Display the retail value, suggested bid, amount saved, and discounted price
-            document.getElementById("retailValueDisplay").textContent = retailValue.toFixed(2);
-            document.getElementById("suggestedBid").textContent = suggestedBid.toFixed(2);
-            document.getElementById("amountSaved").textContent = amountSaved.toFixed(2);
-            //document.getElementById("discountedPrice").textContent = discountedPrice.toFixed(2);
-
-            // Check if the bid is a good deal
-            if (bidAmount <= discountedPrice) {
-                goodDeal = true;
-                dealStatus = "Good deal!"; // Good deal message
-                document.getElementById("dealStatus").classList.add("good-deal");
-            } else if(bidAmount){
-                goodDeal = false;
-                dealStatus = "Not a good deal."; // Not a good deal message
-                document.getElementById("dealStatus").classList.remove("good-deal");
+            // Deal status is graded on all-in total cost as a % of retail -
+            // that's what actually leaves your wallet, premium and tax included.
+            // Needs both a bid and a retail value to mean anything.
+            const dealStatusEl = document.getElementById("dealStatus");
+            dealStatusEl.classList.remove("grade-great", "grade-good", "grade-fair", "grade-bad");
+            let dealStatus;
+            if (!hasBid) {
+                dealStatus = "Bid Not Set";
+            } else if (!hasRetailValue) {
+                dealStatus = "Add Retail Value to Check";
             } else {
-                goodDeal = false;
-                dealStatus = "Current Bid Amount Not Set"; // Not a good deal message
-                document.getElementById("dealStatus").classList.remove("good-deal");
+                const costRatio = totalCost / retailValue;
+                if (costRatio <= 0.40) {
+                    dealStatus = "Great deal";
+                    dealStatusEl.classList.add("grade-great");
+                } else if (costRatio <= 0.50) {
+                    dealStatus = "Good deal";
+                    dealStatusEl.classList.add("grade-good");
+                } else if (costRatio <= 0.65) {
+                    dealStatus = "Fair deal";
+                    dealStatusEl.classList.add("grade-fair");
+                } else {
+                    dealStatus = "Bad deal";
+                    dealStatusEl.classList.add("grade-bad");
+                }
             }
-
-            // Display the deal status
-            document.getElementById("dealStatus").textContent = dealStatus;
+            dealStatusEl.textContent = dealStatus;
         }
 
         function clearResults() {
-            // Clear the results if bid is 0 or invalid
             document.getElementById("retailValueDisplay").textContent = "0.00";
             document.getElementById("suggestedBid").textContent = "0.00";
             document.getElementById("amountSaved").textContent = "0.00";
             document.getElementById("totalCost").textContent = "0.00";
             document.getElementById("maxBidAmount").textContent = "0.00";
+            document.getElementById("maxBidWarning").hidden = true;
             document.getElementById("dealStatus").textContent = "";
-            document.getElementById("dealStatus").classList.remove("good-deal");
+            document.getElementById("dealStatus").classList.remove("grade-great", "grade-good", "grade-fair", "grade-bad");
         }
 
-        // Attach event listeners to input fields to automatically update calculations
+        // Pre-fills "I Only Want to Pay" with the suggested price whenever
+        // retail value or condition changes, but only until the user edits
+        // that field themselves.
+        function preCalculate() {
+            const condition = document.querySelector('input[name="condition"]:checked').value;
+            const retailValue = parseFloat(document.getElementById("retailValue").value);
+
+            if (isNaN(retailValue)) {
+                calculate();
+                return;
+            }
+
+            const discount = getDiscount(condition);
+            const suggestedPrice = retailValue * (1 - discount);
+
+            document.getElementById("suggestedBid").textContent = suggestedPrice.toFixed(2);
+            if (!maxTotalDirty) {
+                document.getElementById("maxTotal").value = suggestedPrice.toFixed(2);
+            }
+            calculate();
+        }
+
         document.getElementById("retailValue").addEventListener("input", preCalculate);
         document.getElementById("bid").addEventListener("input", calculate);
-        document.getElementById("maxTotal").addEventListener("input", calculate);
+        document.getElementById("maxTotal").addEventListener("input", () => {
+            maxTotalDirty = true;
+            calculate();
+        });
         document.querySelectorAll('input[name="condition"]').forEach((radio) => {
             radio.addEventListener("change", preCalculate);
         });
 
-        function preCalculate(){
-            const condition = document.querySelector('input[name="condition"]:checked').value;
-            let retailValue = parseInt(document.getElementById("retailValue").value);
-
-            // Ensure bidAmount and retailValue are numbers
-            if (isNaN(retailValue)) {
-                return; // Do nothing if inputs are invalid
-            }
-
-            let discountedPrice = 0;
-            if (condition === "likeNew") {
-                discount = 0.66; // 66% off for "Like-new"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Like-new"
-            } else if (condition === "openBox-70") {
-                discount = 0.70; // 70% off for "Open box"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"
-            } else {
-                discount = 0.75; // 75% off for "Open box"
-                suggestedBid = retailValue * (1 - discount); // Suggested bid for "Open box"             
-            }
-            document.getElementById("suggestedBid").textContent = suggestedBid.toFixed(2);
-            document.getElementById("maxTotal").value = suggestedBid.toFixed(2);
-            calculate();
-        }
-
         function calculateFutureTime() {
-          const hours = parseInt(document.getElementById('hours').value) || 0;
-          const minutes = parseInt(document.getElementById('minutes').value) || 0;
-    
-          const now = new Date();  // Get current local time
-          const future = new Date(now.getTime() + (hours * 60 + minutes) * 60000);  // Add time in ms
-    
+          const hours = parseInt(document.getElementById('hours').value, 10) || 0;
+          const minutes = parseInt(document.getElementById('minutes').value, 10) || 0;
+
+          const now = new Date();
+          const future = new Date(now.getTime() + (hours * 60 + minutes) * 60000);
+
           const options = {
             weekday: 'long',
             year: 'numeric',
@@ -284,10 +535,17 @@
             minute: '2-digit',
             second: '2-digit',
           };
-    
-          document.getElementById('timeResult').textContent = 
+
+          document.getElementById('timeResult').textContent =
             `Future time: ${future.toLocaleString(undefined, options)}`;
         }
+
+        document.getElementById('calcTimeBtn').addEventListener('click', calculateFutureTime);
+
+        // Reflect any browser-restored form state (e.g. back/forward cache) on load.
+        window.addEventListener('DOMContentLoaded', () => {
+            clearResults();
+        });
     </script>
 </body>
 </html>
