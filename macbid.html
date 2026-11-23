@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mac-Bid Total Cost Calculator</title>
+    <title>Auction Total Cost Calculator</title>
     <style>
         :root {
             --bg: #f2f4f7;
@@ -138,6 +138,41 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
             gap: 8px;
+        }
+
+        /* Compact pill-style selector for the auction type. */
+        .auction-toggle {
+            display: flex;
+            width: 100%;
+            gap: 4px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--input-bg);
+        }
+
+        .auction-toggle .radio-option {
+            flex: 1 1 0;
+            min-width: 0;
+        }
+
+        .auction-toggle .radio-option span {
+            border: 1.5px solid transparent;
+            border-radius: 999px;
+            padding: 9px 12px;
+            font-size: 14px;
+        }
+
+        .auction-toggle .radio-option input:checked + span {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.16);
+        }
+
+        .auction-toggle .radio-option input:focus-visible + span {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
 
         .radio-option {
@@ -285,6 +320,67 @@
             min-height: 20px;
         }
 
+
+        .tab-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 0 0 20px;
+        }
+        button.tab-button {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        button.tab-button[aria-selected="true"] {
+            color: var(--accent);
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+        .tab-panel[hidden] { display: none !important; }
+        #pickupLocation {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            background: var(--input-bg);
+            color: var(--text);
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+        #pickupLocation:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+        .target-max-bid-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 0 0 16px;
+            margin: -2px 0 18px;
+            border-bottom: 1px solid var(--border);
+        }
+        .target-max-bid-row .result-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+        .nellis-total {
+            color: var(--accent);
+            font-size: 21px;
+            font-weight: 800;
+        }
+        @media (max-width: 420px) {
+        }
+
         @media (max-width: 420px) {
             .card, .result {
                 padding: 18px;
@@ -295,14 +391,47 @@
 </head>
 <body>
     <div class="container">
-        <h1>Mac-Bid Total Cost Calculator</h1>
-        <p class="subtitle">Estimate fees, tax, and your ideal bid before you commit</p>
+        <h1>Auction Total Cost Calculator</h1>
+        <p class="subtitle">Compare your target, suggested price, and all-in auction cost</p>
 
         <div class="card">
             <form id="calcForm" onsubmit="return false;">
                 <div class="field">
+                    <label>Auction</label>
+                    <div class="auction-toggle" role="radiogroup" aria-label="Auction">
+                        <label class="radio-option">
+                            <input type="radio" name="auctionType" value="macbid" checked>
+                            <span>MacBid</span>
+                        </label>
+                        <label class="radio-option">
+                            <input type="radio" name="auctionType" value="nellis">
+                            <span>Nellis</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="field">
                     <label for="retailValue">Retail Value ($)</label>
-                    <input type="number" id="retailValue" placeholder="e.g. 250" step="0.01" min="1" inputmode="decimal" />
+                    <input type="number" id="retailValue" placeholder="e.g. 250" step="0.01" min="0.01" inputmode="decimal" required>
+                </div>
+
+                <div class="field">
+                    <label for="maxTotal">I Only Want to Pay ($)</label>
+                    <input type="number" id="maxTotal" placeholder="Enter your max total cost" step="0.01" min="0.01" inputmode="decimal" required>
+                </div>
+
+                <div class="result-row target-max-bid-row">
+                    <span class="result-label">Max Bid to Hit Your Target</span>
+                    <span class="result-value">$<span id="maxBidAmount">0.00</span></span>
+                </div>
+                <p id="maxBidWarning" class="warning" hidden>Your target total is too low to cover the applicable fees and tax.</p>
+
+                <div class="field">
+                    <label for="pickupLocation">Pickup Location / Sales Tax</label>
+                    <select id="pickupLocation">
+                        <option value="0.091" selected>Phoenix — 9.1%</option>
+                        <option value="0.083">Mesa — 8.3%</option>
+                    </select>
                 </div>
 
                 <div class="field">
@@ -323,141 +452,147 @@
                     </div>
                 </div>
 
-                <div class="field">
+                <div class="field" style="margin-bottom:0;">
                     <label for="bid">Current Bid Amount ($)</label>
-                    <input type="number" id="bid" placeholder="Enter your bid" step="0.01" min="0" inputmode="decimal" />
-                </div>
-
-                <div class="field" style="margin-bottom: 0;">
-                    <label for="maxTotal">I Only Want to Pay ($)</label>
-                    <input type="number" id="maxTotal" placeholder="Enter your max total cost" step="0.01" min="1" inputmode="decimal" />
+                    <input type="number" id="bid" placeholder="Enter your bid" step="0.01" min="0.01" inputmode="decimal" required>
                 </div>
             </form>
         </div>
 
-        <div class="result" id="result">
+        <div class="result" id="result" aria-live="polite">
             <div class="result-row">
                 <span class="result-label">Retail Value</span>
                 <span class="result-value">$<span id="retailValueDisplay">0.00</span></span>
             </div>
             <div class="result-row">
                 <span class="result-label">Suggested Price for Condition</span>
-                <span class="result-value">$<span id="suggestedBid">0.00</span></span>
+                <span class="result-value highlight">$<span id="suggestedBid">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Current Bid</span>
+                <span class="result-value">$<span id="bidDisplay">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Handling Fee</span>
+                <span class="result-value">$<span id="handlingFeeDisplay">3.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">15% Buyer's Premium</span>
+                <span class="result-value">$<span id="premiumDisplay">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Sales Tax (<span id="taxRateDisplay">9.1</span>%)</span>
+                <span class="result-value">$<span id="taxDisplay">0.00</span></span>
+            </div>
+            <div class="result-row">
+                <span class="result-label">Total Cost</span>
+                <span class="result-value highlight">$<span id="totalCost">0.00</span></span>
             </div>
             <div class="result-row">
                 <span class="result-label">Amount Saved (Retail − Total Cost)</span>
                 <span class="result-value highlight">$<span id="amountSaved">0.00</span></span>
             </div>
             <div class="result-row">
-                <span class="result-label">Total Cost for Your Bid</span>
-                <span class="result-value">$<span id="totalCost">0.00</span></span>
-            </div>
-            <div class="result-row">
-                <span class="result-label">Max Bid to Hit Your Target</span>
-                <span class="result-value">$<span id="maxBidAmount">0.00</span></span>
+                <span class="result-label">Overage</span>
+                <span class="result-value" id="overage">$0.00</span>
             </div>
             <div class="result-row">
                 <span class="result-label">Deal Status</span>
-                <span id="dealStatus" class="deal-badge" role="status" aria-live="polite"></span>
+                <span id="dealStatus" class="deal-badge" role="status" aria-live="polite">Enter Retail Value and Bid</span>
             </div>
-            <p id="maxBidWarning" class="warning" hidden>Your target total is too low to cover fees and tax.</p>
         </div>
 
         <div class="card" id="timeCalculator">
-          <h2>⏱ Future Time Calculator</h2>
-
-          <div class="field">
-              <label for="hours">Hours</label>
-              <input type="number" id="hours" min="0" placeholder="e.g. 11" inputmode="numeric">
-          </div>
-
-          <div class="field" style="margin-bottom: 0;">
-              <label for="minutes">Minutes</label>
-              <input type="number" id="minutes" min="0" max="59" placeholder="e.g. 33" inputmode="numeric">
-          </div>
-
-          <button type="button" id="calcTimeBtn" style="margin-top: 18px;">Calculate</button>
-
-          <p id="timeResult" role="status" aria-live="polite"></p>
+            <h2>⏱ Future Time Calculator</h2>
+            <div class="field">
+                <label for="hours">Hours</label>
+                <input type="number" id="hours" min="0" placeholder="e.g. 11" inputmode="numeric">
+            </div>
+            <div class="field" style="margin-bottom:0;">
+                <label for="minutes">Minutes</label>
+                <input type="number" id="minutes" min="0" max="59" placeholder="e.g. 33" inputmode="numeric">
+            </div>
+            <button type="button" id="calcTimeBtn" style="margin-top:18px;">Calculate</button>
+            <p id="timeResult" role="status" aria-live="polite"></p>
         </div>
     </div>
 
     <script>
-        const handlingFee = 3.00;
-        const premiumRate = 0.15;
-        const taxRate = 0.091;
-
-        // Tracks whether the user has manually edited "I Only Want to Pay"
-        // so we stop overwriting it once they've taken control of it.
-        let maxTotalDirty = false;
+        const HANDLING_FEE = 3.00;
+        const PREMIUM_RATE = 0.15;
+        const TAX_DEFAULT = 0.091;
 
         function getDiscount(condition) {
             if (condition === "likeNew") return 0.66;
             if (condition === "openBox-70") return 0.70;
-            return 0.75; // openBox
+            return 0.75;
+        }
+
+        function money(value) {
+            return (Number.isFinite(value) ? value : 0).toFixed(2);
         }
 
         function calculate() {
-            const retailValue = parseFloat(document.getElementById("retailValue").value);
-            const bidAmount = parseFloat(document.getElementById("bid").value);
-            const maxTotal = parseFloat(document.getElementById("maxTotal").value);
-
-            const hasRetailValue = !isNaN(retailValue) && retailValue > 0;
-            const hasBid = !isNaN(bidAmount) && bidAmount > 0;
-            const hasMaxTotal = !isNaN(maxTotal) && maxTotal > 0;
-
+            const retailValue = Number.parseFloat(document.getElementById("retailValue").value);
+            const maxTotal = Number.parseFloat(document.getElementById("maxTotal").value);
+            const bidAmount = Number.parseFloat(document.getElementById("bid").value);
+            const hasRetailValue = Number.isFinite(retailValue) && retailValue > 0;
+            const hasMaxTotal = Number.isFinite(maxTotal) && maxTotal > 0;
+            const hasBid = Number.isFinite(bidAmount) && bidAmount > 0;
+            const auctionType = document.querySelector('input[name="auctionType"]:checked').value;
             const condition = document.querySelector('input[name="condition"]:checked').value;
-            const discount = getDiscount(condition);
-            const discountedPrice = hasRetailValue ? retailValue * (1 - discount) : 0;
+            const taxRate = Number.parseFloat(document.getElementById("pickupLocation").value) || TAX_DEFAULT;
+            const handlingFee = auctionType === "macbid" ? HANDLING_FEE : 0;
 
-            // Total cost only needs a bid amount - independent of retail value.
-            let totalCost = 0;
-            if (hasBid) {
-                const premium = bidAmount * premiumRate;
-                const subtotal = bidAmount + handlingFee + premium;
-                totalCost = subtotal * (1 + taxRate);
-            }
-            document.getElementById("totalCost").textContent = totalCost.toFixed(2);
+            // Retail value and condition affect only the suggested condition price.
+            const suggestedPrice = hasRetailValue ? retailValue * (1 - getDiscount(condition)) : 0;
 
-            // Max bid only needs a target total - independent of retail value.
+            // Target and auction type determine the maximum bid, independent of retail and condition.
             let maxBid = 0;
-            const warningEl = document.getElementById("maxBidWarning");
+            let targetTooLow = false;
             if (hasMaxTotal) {
-                maxBid = (maxTotal / (1 + taxRate) - handlingFee) / (1 + premiumRate);
-                maxBid = Math.floor(maxBid);
-                if (maxBid < 0) {
+                const rawMaxBid = (maxTotal / (1 + taxRate) - handlingFee) / (1 + PREMIUM_RATE);
+                if (rawMaxBid < 0) {
+                    targetTooLow = true;
                     maxBid = 0;
-                    warningEl.hidden = false;
                 } else {
-                    warningEl.hidden = true;
+                    // Round down to cents so the resulting all-in total never exceeds the target.
+                    maxBid = Math.floor((rawMaxBid + 1e-9) * 100) / 100;
                 }
-            } else {
-                warningEl.hidden = true;
-            }
-            document.getElementById("maxBidAmount").textContent = maxBid.toFixed(0);
-
-            // Retail-value-dependent fields.
-            if (hasRetailValue) {
-                document.getElementById("retailValueDisplay").textContent = retailValue.toFixed(2);
-                document.getElementById("suggestedBid").textContent = discountedPrice.toFixed(2);
-                document.getElementById("amountSaved").textContent = (retailValue - totalCost).toFixed(2);
-            } else {
-                document.getElementById("retailValueDisplay").textContent = "0.00";
-                document.getElementById("suggestedBid").textContent = "0.00";
-                document.getElementById("amountSaved").textContent = "0.00";
             }
 
-            // Deal status is graded on all-in total cost as a % of retail -
-            // that's what actually leaves your wallet, premium and tax included.
-            // Needs both a bid and a retail value to mean anything.
+            // Bid, auction type, and tax location determine actual total.
+            const premium = hasBid ? bidAmount * PREMIUM_RATE : 0;
+            const taxableSubtotal = hasBid ? bidAmount + premium + handlingFee : 0;
+            const tax = taxableSubtotal * taxRate;
+            const totalCost = taxableSubtotal + tax;
+            const amountSaved = hasRetailValue && hasBid ? retailValue - totalCost : 0;
+            const difference = hasBid && hasMaxTotal ? totalCost - maxTotal : 0;
+
+            document.getElementById("retailValueDisplay").textContent = money(hasRetailValue ? retailValue : 0);
+            document.getElementById("suggestedBid").textContent = money(suggestedPrice);
+            document.getElementById("maxBidAmount").textContent = money(maxBid);
+            document.getElementById("bidDisplay").textContent = money(hasBid ? bidAmount : 0);
+            document.getElementById("handlingFeeDisplay").textContent = money(handlingFee);
+            document.getElementById("premiumDisplay").textContent = money(premium);
+            document.getElementById("taxRateDisplay").textContent = (taxRate * 100).toFixed(1);
+            document.getElementById("taxDisplay").textContent = money(tax);
+            document.getElementById("totalCost").textContent = money(totalCost);
+            document.getElementById("amountSaved").textContent = money(amountSaved);
+            document.getElementById("overage").textContent = hasBid && hasMaxTotal
+                ? (Math.abs(difference) < 0.005 ? "At target" : `${difference > 0 ? "Over by" : "Under by"} $${Math.abs(difference).toFixed(2)}`)
+                : "$0.00";
+
+            const warningEl = document.getElementById("maxBidWarning");
+            warningEl.hidden = !targetTooLow;
+            warningEl.textContent = auctionType === "macbid"
+                ? "Your target total is too low to cover the $3.00 handling fee and tax."
+                : "Your target total is too low to calculate a positive bid after tax.";
+
             const dealStatusEl = document.getElementById("dealStatus");
             dealStatusEl.classList.remove("grade-great", "grade-good", "grade-fair", "grade-bad");
-            let dealStatus;
-            if (!hasBid) {
-                dealStatus = "Bid Not Set";
-            } else if (!hasRetailValue) {
-                dealStatus = "Add Retail Value to Check";
-            } else {
+            let dealStatus = "Enter Retail Value and Bid";
+            if (hasBid && hasRetailValue) {
                 const costRatio = totalCost / retailValue;
                 if (costRatio <= 0.40) {
                     dealStatus = "Great deal";
@@ -476,76 +611,24 @@
             dealStatusEl.textContent = dealStatus;
         }
 
-        function clearResults() {
-            document.getElementById("retailValueDisplay").textContent = "0.00";
-            document.getElementById("suggestedBid").textContent = "0.00";
-            document.getElementById("amountSaved").textContent = "0.00";
-            document.getElementById("totalCost").textContent = "0.00";
-            document.getElementById("maxBidAmount").textContent = "0.00";
-            document.getElementById("maxBidWarning").hidden = true;
-            document.getElementById("dealStatus").textContent = "";
-            document.getElementById("dealStatus").classList.remove("grade-great", "grade-good", "grade-fair", "grade-bad");
-        }
-
-        // Pre-fills "I Only Want to Pay" with the suggested price whenever
-        // retail value or condition changes, but only until the user edits
-        // that field themselves.
-        function preCalculate() {
-            const condition = document.querySelector('input[name="condition"]:checked').value;
-            const retailValue = parseFloat(document.getElementById("retailValue").value);
-
-            if (isNaN(retailValue)) {
-                calculate();
-                return;
-            }
-
-            const discount = getDiscount(condition);
-            const suggestedPrice = retailValue * (1 - discount);
-
-            document.getElementById("suggestedBid").textContent = suggestedPrice.toFixed(2);
-            if (!maxTotalDirty) {
-                document.getElementById("maxTotal").value = suggestedPrice.toFixed(2);
-            }
-            calculate();
-        }
-
-        document.getElementById("retailValue").addEventListener("input", preCalculate);
-        document.getElementById("bid").addEventListener("input", calculate);
-        document.getElementById("maxTotal").addEventListener("input", () => {
-            maxTotalDirty = true;
-            calculate();
+        document.querySelectorAll('#calcForm input').forEach((input) => {
+            input.addEventListener('input', calculate);
+            input.addEventListener('change', calculate);
         });
-        document.querySelectorAll('input[name="condition"]').forEach((radio) => {
-            radio.addEventListener("change", preCalculate);
-        });
+        document.getElementById('pickupLocation').addEventListener('change', calculate);
+        calculate();
 
         function calculateFutureTime() {
-          const hours = parseInt(document.getElementById('hours').value, 10) || 0;
-          const minutes = parseInt(document.getElementById('minutes').value, 10) || 0;
-
-          const now = new Date();
-          const future = new Date(now.getTime() + (hours * 60 + minutes) * 60000);
-
-          const options = {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit',
-          };
-
-          document.getElementById('timeResult').textContent =
-            `Future time: ${future.toLocaleString(undefined, options)}`;
+            const hours = Number.parseInt(document.getElementById('hours').value, 10) || 0;
+            const minutes = Number.parseInt(document.getElementById('minutes').value, 10) || 0;
+            const future = new Date(Date.now() + (hours * 60 + minutes) * 60000);
+            const options = {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit', second: '2-digit'
+            };
+            document.getElementById('timeResult').textContent = `Future time: ${future.toLocaleString(undefined, options)}`;
         }
-
         document.getElementById('calcTimeBtn').addEventListener('click', calculateFutureTime);
-
-        // Reflect any browser-restored form state (e.g. back/forward cache) on load.
-        window.addEventListener('DOMContentLoaded', () => {
-            clearResults();
-        });
     </script>
 </body>
 </html>
